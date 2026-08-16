@@ -5,6 +5,11 @@ name: TestFlight
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: "検証のみ（アップロードしない）。App Store Connect の登録前に、実機向けビルドが通るかを確かめるのに使う"
+        required: false
+        default: false
+        type: boolean
       whats_new:
         description: "テスターに表示する変更点（省略可）"
         required: false
@@ -34,7 +39,11 @@ jobs:
 
       # 証明書とProvisioning Profileは -allowProvisioningUpdates で
       # Xcodeに取得させる。そのためAPIキーをxcodebuildが読める場所に置く。
+      #
+      # dry run では鍵を置かない。アーカイブは署名しないので鍵が要るのは送信だけであり、
+      # App Store Connect の登録を済ませる前でも実機向けビルドの成否を確認できる。
       - name: Write App Store Connect API key
+        if: ${{ !inputs.dry_run }}
         env:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
@@ -122,10 +131,22 @@ jobs:
             fail=1
           fi
 
+          # アイコンが無いビルドは App Store Connect の処理段階で弾かれる。
+          # アップロードしてから気付くと配信が丸ごとやり直しになるので、ここで止める。
+          if ! /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$PLIST" >/dev/null 2>&1; then
+            echo "::error::アプリアイコンが含まれていません（python scripts/make_app_icon.py を実行してコミットする）"
+            fail=1
+          fi
+          if [ ! -f "$APP/Assets.car" ]; then
+            echo "::error::Assets.car がありません（アセットカタログがビルドに含まれていない）"
+            fail=1
+          fi
+
           [ "$fail" -eq 0 ] || exit 1
-          echo "OK: build=$BUILD / 暗号化宣言・表示名・問題データ・プライバシーマニフェストすべて確認済み"
+          echo "OK: build=$BUILD / 暗号化宣言・表示名・アイコン・問題データ・プライバシーマニフェストすべて確認済み"
 
       - name: Export and upload to TestFlight
+        if: ${{ !inputs.dry_run }}
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
@@ -149,14 +170,22 @@ jobs:
         if: success()
         run: |
           {
-            echo "### TestFlightへアップロードしました"
-            echo ""
-            echo "- バージョン: 1.0 (ビルド ${{ github.run_number }})"
-            echo "- コミット: ${{ github.sha }}"
-            echo ""
-            echo "App Store Connectでの処理完了後、TestFlightに表示されます（通常5〜15分）。"
-            if [ -n "${{ inputs.whats_new }}" ]; then
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "### 検証のみ実行しました（アップロードなし）"
               echo ""
-              echo "変更点: ${{ inputs.whats_new }}"
+              echo "実機向けのアーカイブが通り、埋め込み内容の検証もすべて通過しました。"
+              echo "配信するには \`dry_run\` を外して再実行してください。"
+              echo "初回は \`docs/testflight-setup.md\` の準備（Secrets・App ID・アプリ登録）が要ります。"
+            else
+              echo "### TestFlightへアップロードしました"
+              echo ""
+              echo "- バージョン: 1.0 (ビルド ${{ github.run_number }})"
+              echo "- コミット: ${{ github.sha }}"
+              echo ""
+              echo "App Store Connectでの処理完了後、TestFlightに表示されます（通常5〜15分）。"
+              if [ -n "${{ inputs.whats_new }}" ]; then
+                echo ""
+                echo "変更点: ${{ inputs.whats_new }}"
+              fi
             fi
           } >> "$GITHUB_STEP_SUMMARY"

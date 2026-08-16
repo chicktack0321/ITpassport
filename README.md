@@ -10,6 +10,7 @@
 | --- | --- |
 | [docs/design-spec.md](docs/design-spec.md) | 設計仕様書。画面・データモデル・出題ロジック・課金・フェーズ計画 |
 | [docs/question-authoring-prompt.md](docs/question-authoring-prompt.md) | AI作問プロンプト完全版と運用メモ |
+| [docs/testflight-setup.md](docs/testflight-setup.md) | TestFlightで実機確認できるようにするまでの手順 |
 
 ## 現在の状態
 
@@ -48,17 +49,17 @@ python scripts/validate_seed.py
 
 ### TestFlightへ配信する
 
-Actionsタブ → **TestFlight** ワークフロー → **Run workflow** を手動実行する。
-必要なSecretsは以下の3つ。
+**初回は [docs/testflight-setup.md](docs/testflight-setup.md) の手順を先に済ませること。**
+GitHub Secrets の登録、App ID の登録、App Store Connect でのアプリ登録が必要で、
+どれか欠けるとアップロードの段階で失敗する。バンドルIDは公開後に変更できないため、
+アプリを登録する前に確定させる。
 
-| Secret | 内容 |
-| --- | --- |
-| `ASC_API_KEY_ID` | App Store Connect APIキーの Key ID |
-| `ASC_API_ISSUER_ID` | 同 Issuer ID |
-| `ASC_API_KEY_P8` | ダウンロードした `.p8` の中身（BEGIN/END行を含む全文） |
+設定が済んでいれば、Actionsタブ → **TestFlight** ワークフロー → **Run workflow** を手動実行する。
+pushのたびに配信するとビルドが溜まりテスターへの通知も続くため、意図的に手動トリガーにしている。
 
 ビルド番号にはワークフローの実行番号を使う。App Store Connectは同じ（バージョン, ビルド番号）の
-組を二度受け付けないため、必ず増える値が要る。
+組を二度受け付けないため、必ず増える値が要る。表示用のバージョンを上げるときは
+`project.yml` の `MARKETING_VERSION` を変更する。
 
 ### Macが用意できた場合のローカル手順
 
