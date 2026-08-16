@@ -42,9 +42,14 @@ final class HomeViewModel {
     var overallAccuracy: Double { summary.accuracy }
 
     /// いちばん遅れている分野。次に何をやるべきかの案内に使う。
-    /// 全問数が0の分野（データ未投入）は候補から外す。
+    ///
+    /// まだどの分野も習得済みが0のうちは返さない。全分野が同率0%のときに最小値を取ると、
+    /// 並び順で決まった分野を「いちばん遅れている」と言い切ることになり、根拠のない案内になる。
+    /// 学習前の入口は「演習を始める」で足りている。
     var weakestField: FieldProgress? {
-        fieldProgress.filter { $0.totalCount > 0 }.min { $0.fraction < $1.fraction }
+        let candidates = fieldProgress.filter { $0.totalCount > 0 }
+        guard candidates.contains(where: { $0.memorizedCount > 0 }) else { return nil }
+        return candidates.min { $0.fraction < $1.fraction }
     }
 
     /// 習熟度の内訳。

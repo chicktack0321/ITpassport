@@ -6,6 +6,9 @@ import SwiftData
 /// 課金状態では絞らない。出題対象から外れている応用問題も閲覧・解説の読み直しはできる
 /// （機能を止める作りにしない方針。`AccessRights` のコメント参照）。
 struct QuestionListView: View {
+    /// 一覧の行をUIテストから掴むための識別子
+    static let rowIdentifier = "questionRow"
+
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = QuestionListViewModel()
 
@@ -46,6 +49,9 @@ struct QuestionListView: View {
                     } label: {
                         QuestionRow(question: question, status: viewModel.status(for: question))
                     }
+                    // 問題文は収録データによって変わるうえ絞り込みで並びも変わるため、
+                    // UIテストからは文言でも位置でもなく識別子で掴む
+                    .accessibilityIdentifier(Self.rowIdentifier)
                 }
             } header: {
                 Text("\(viewModel.questions.count)問")

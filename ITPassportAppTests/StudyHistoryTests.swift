@@ -114,17 +114,23 @@ final class StudyHistoryTests: XCTestCase {
         )
     }
 
-    /// 解答数が0の日は「学習した日」に数えない（ログの行だけ作られる場合がある）
+    /// 解答数が0の日は「学習した日」に数えない。
+    ///
+    /// `StudyLog` の行は解答時以外にも作られうる（習熟度スナップショットの焼き直しなど）ので、
+    /// 行の有無ではなく解答数で判定する必要がある。
     func testStreakIgnoresDaysWithZeroAnswers() {
+        // 4/7 と 4/9 に解答があり、4/8 は行はあるが0問。
+        // 0問の日を学習日として数えると、実際は途切れているのに3日連続に見えてしまう。
         let logs = [
-            log(2026, 4, 8, studied: 3, attempts: 3),
-            log(2026, 4, 9, studied: 0, attempts: 0)
+            log(2026, 4, 7, studied: 3, attempts: 3),
+            log(2026, 4, 8, studied: 0, attempts: 0),
+            log(2026, 4, 9, studied: 3, attempts: 3)
         ]
 
         XCTAssertEqual(
             StudyHistory.currentStreak(logs: logs, today: date(2026, 4, 9), calendar: calendar),
-            0,
-            "当日が0問なら前日を起点にするが、その前日も0問なら連続は0"
+            1,
+            "0問の日は連続を繋がない"
         )
     }
 

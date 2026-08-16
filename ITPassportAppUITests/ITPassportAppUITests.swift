@@ -86,11 +86,14 @@ final class ITPassportAppUITests: XCTestCase {
             settle()
             capture(app, "05_QuestionList")
 
-            // 問題文は出題データによって変わるため、文言ではなくセルの位置で掴む。
-            // 一覧の先頭のセルであれば絞り込み行の増減に影響されない。
-            let firstCell = app.cells.firstMatch
-            if firstCell.waitForExistence(timeout: 5), firstCell.isHittable {
-                firstCell.tap()
+            // 問題文は収録データによって変わり、絞り込みで並びも変わるため識別子で掴む。
+            // SwiftUIのListでは識別子がセルとボタンのどちらに載るかが決まらないので、
+            // 種類を限定せずに探す。
+            let firstRow = app.descendants(matching: .any)
+                .matching(identifier: "questionRow")
+                .firstMatch
+            if firstRow.waitForExistence(timeout: 5), firstRow.isHittable {
+                firstRow.tap()
                 settle()
 
                 // 詳細に入れたときだけ撮って戻る
