@@ -1,0 +1,113 @@
+name: ITPassportApp
+
+options:
+  bundleIdPrefix: com.itpassport.app
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  ITPassportApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+
+    sources:
+      - path: ITPassportApp
+        excludes:
+          - "App/Info.plist"
+
+    # `info:` は「指定パスにInfo.plistを生成する」指定であり、手書きのInfo.plistを
+    # xcodegen generate のたびに上書きしてしまう（ベースアプリでは
+    # CFBundleDisplayName / ITSAppUsesNonExemptEncryption がビルドから抜け落ちた）。
+    # 既存のファイルをそのまま使わせるため INFOPLIST_FILE を直接指定する。
+    settings:
+      base:
+        INFOPLIST_FILE: ITPassportApp/App/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app
+        # 日本語＋スペースの PRODUCT_NAME はバンドル名・モジュール名・ビルドパスに波及し、
+        # テストターゲットの TEST_HOST 解決に失敗する。ホーム画面に出る名前は
+        # Info.plist の CFBundleDisplayName が担うため、ここはASCIIで固定する。
+        PRODUCT_NAME: ITPassportApp
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        MARKETING_VERSION: "1.0"
+        # TestFlightへ上げるたびにワークフローの実行番号で上書きする（同じ番号は再アップロードできない）
+        CURRENT_PROJECT_VERSION: "1"
+        # 証明書とProvisioning ProfileはApp Store Connect APIキー経由でXcodeに作らせる。
+        # 手元にMacが無く、証明書を手動で書き出して秘密として持ち回ることができないため。
+        # Team ID は英単語特訓アプリと同じ開発者アカウントのもの。
+        DEVELOPMENT_TEAM: 5PT8D8SKN8
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: YES
+
+  ITPassportAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+
+    sources:
+      - path: ITPassportAppTests
+      # シードの妥当性をテストから検証するため、JSONそのものをバンドルに含める
+      - path: ITPassportApp/Resources/question_master_seed.json
+        buildPhase: resources
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app.tests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+    dependencies:
+      - target: ITPassportApp
+
+  ITPassportAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+
+    sources:
+      - path: ITPassportAppUITests
+      # 審査用スクリーンショットの撮影で、テスト用のストアを立てるのに読み込む。
+      # スキーム側の指定ではストアフロントを日本にできず、ドル表記になってしまうため、
+      # UIテストから SKTestSession で明示的に設定する。
+      - path: Products.storekit
+        buildPhase: resources
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app.uitests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+    dependencies:
+      - target: ITPassportApp
+
+schemes:
+  ITPassportApp:
+    build:
+      targets:
+        ITPassportApp: all
+        ITPassportAppTests: [test]
+        ITPassportAppUITests: [test]
+    # シミュレータにはApp Storeが無いため、StoreKitの設定ファイルを指定しないと
+    # 商品情報を取得できず、購入画面の価格が「読み込んでいます」のままになる。
+    run:
+      config: Debug
+      storeKitConfiguration: Products.storekit
+    # テスト実行時のストアはUIテスト側が SKTestSession で用意する。
+    # ここで指定するとストアフロントを米国から変えられず、審査用の画像がドル表記になる。
+    test:
+      config: Debug
+      targets:
+        - ITPassportAppTests
+        - ITPassportAppUITests
+    archive:
+      config: Release

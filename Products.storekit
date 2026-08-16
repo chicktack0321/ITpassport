@@ -1,0 +1,33 @@
+{
+  "identifier" : "A1B2C3D4-0000-0000-0000-ITPASSPORT01",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "600",
+      "familyShareable" : false,
+      "internalID" : "B1C2D3E4-0001-0000-0000-ITPASSPORT01",
+      "localizations" : [
+        {
+          "description" : "計算問題や最新シラバス項目を含む応用レベルの問題を、演習の出題対象に加えます。買い切りで、月額・年額の課金はありません。",
+          "displayName" : "応用問題の解放",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.itpassport.app.unlock.advanced",
+      "referenceName" : "Advanced questions unlock",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0",
+    "_developerTeamID" : "5PT8D8SKN8",
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "ja_JP",
+    "_storefront" : "JPN"
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
