@@ -1,5 +1,7 @@
 # ITパスポート特訓（完全オフライン）
 
+[![iOS Build](https://github.com/chicktack0321/ITpassport/actions/workflows/ios-build.yml/badge.svg)](https://github.com/chicktack0321/ITpassport/actions/workflows/ios-build.yml)
+
 国家試験「ITパスポート試験」対策の4択問題アプリ。サーバー通信・アカウント登録なし。
 `C:\System_Dev\eitango_app_01`（英検2級 英単語特訓）の骨格を流用し、
 主データを「単語」から「4択問題」へ差し替えたもの。
@@ -11,9 +13,10 @@
 
 ## 現在の状態
 
-**Phase 0（骨格移植）完了。** アプリは一通り動作する構成になっており、24問を同梱している。
-Phase 1（問題を300問へ拡充）は §14 の手順に従って進める。
+**Phase 0（骨格移植）完了。** CIでビルド・ユニットテスト88件・UIテスト2件がすべて通り、
+シミュレータ上で各画面が描画されることをスクリーンショットで確認済み。24問を同梱している。
 
+Phase 1（問題を300問へ拡充）は設計仕様書 §14 の手順に従って進める。
 未着手の項目は「[残っている作業](#残っている作業)」を参照。
 
 ## ビルド方法（Mac実機なし・GitHub ActionsのmacOSランナーを使用）

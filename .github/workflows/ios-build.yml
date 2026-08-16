@@ -1,8 +1,16 @@
 name: iOS Build
 
 on:
+  # ドキュメントだけの変更ではビルドを回さない。
+  # 問題データ（question_master_seed.json）はJSONなので、ここでは除外されず必ず検証される。
   push:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 jobs:
