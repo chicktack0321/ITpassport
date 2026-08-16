@@ -205,6 +205,30 @@ def report_distribution(path: Path) -> None:
             "python scripts/rebalance_answers.py で平準化できます。"
         )
 
+    # 正解だけが長いと、内容を知らなくても「いちばん長い選択肢」を選んで当てられてしまう。
+    # 文字数そのものより、画面で何行に折り返されるかが利用者に見える差になるので行数で測る。
+    per_line = 22  # iPhoneの選択肢ボタンで日本語がおおよそ折り返す字数
+    def line_count(text):
+        return -(-len(text) // per_line)
+
+    longest_lines = 0
+    for q in questions:
+        correct = q.get("correctChoice")
+        choices = q.get("choices") or {}
+        if correct not in choices:
+            continue
+        others = [line_count(v) for k, v in choices.items() if k != correct]
+        if others and line_count(choices[correct]) > max(others):
+            longest_lines += 1
+
+    print("\n選択肢の長さ（正解だけが長いと、読まずに当てられてしまう）:")
+    print(f"  正解が行数で最も長い問題: {longest_lines}問 ({longest_lines / total * 100:.0f}%)")
+    if total and longest_lines / total > 0.35:
+        print(
+            "  警告: 正解が最も長い問題が多すぎます。誤答を書き足して差をなくしてください"
+            "（削るのではなく足すと、誤答としてのもっともらしさも上がります）。"
+        )
+
     print("\n中分類別:")
     missing = [c for c in MID_CATEGORIES if c not in by_category]
     for category, count in sorted(by_category.items()):
