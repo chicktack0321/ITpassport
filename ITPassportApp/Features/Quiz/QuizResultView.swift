@@ -209,16 +209,27 @@ struct QuizResultView: View {
         }
     }
 
+    /// 次にとってほしい行動を1つだけ目立たせる。
+    ///
+    /// 間違えた問題があるなら解き直しが最優先（結果を見た直後がいちばん定着する）、
+    /// 全問正解なら次のセットへ進むのが最優先になる。
+    /// ボタンの種類ごとに `.borderedProminent` と `.bordered` は別の型なので、
+    /// 三項演算子で切り替えることはできない。分岐そのものを分ける。
     private var actions: some View {
         VStack(spacing: 10) {
-            if !summary.missedQuestions.isEmpty {
+            if summary.missedQuestions.isEmpty {
+                Button("次のセットに進む", action: onRetry)
+                    .buttonStyle(.borderedProminent)
+            } else {
                 Button("間違えた問題だけ解き直す（\(summary.missedQuestions.count)問）") {
                     onRetryMissed(summary.missedQuestions.map(\.id))
                 }
                 .buttonStyle(.borderedProminent)
+
+                Button("次のセットに進む", action: onRetry)
+                    .buttonStyle(.bordered)
             }
-            Button("次のセットに進む", action: onRetry)
-                .buttonStyle(summary.missedQuestions.isEmpty ? .borderedProminent : .bordered)
+
             Button("出題範囲を変える", action: onBackToStart)
                 .buttonStyle(.bordered)
         }
