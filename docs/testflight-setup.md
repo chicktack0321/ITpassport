@@ -7,32 +7,29 @@ CI（`ios-build.yml`）はシミュレータ上での動作までしか見てい
 実機でしか分からないこと（触り心地、文字の詰まり、音、触覚フィードバック、
 実際の購入フロー）はここから先で確認する。
 
+## 進捗
+
+| | 項目 | 状態 |
+| --- | --- | --- |
+| 0 | バンドルID の確定 | ✅ `com.itpassport.app` |
+| 1 | 実機向けビルドの確認（dry run） | ✅ アーカイブ・埋め込み内容の検証とも通過 |
+| 2 | GitHub Secrets | ⚠️ 3つ中2つ。`ASC_API_ISSUER_ID` が未登録 |
+| 3 | App ID の登録 | ⬜ 未 |
+| 4 | App Store Connect でのアプリ登録 | ⬜ 未 |
+| 5 | 配信 | ⬜ 未 |
+
 ---
 
-## 0. 先に決めること — バンドルID
+## 0. バンドルID（確定済み）
 
-**バンドルIDはApp Store公開後に変更できない。** アプリの同一性そのものなので、
-変えると別アプリ扱いになり、既存ユーザーは更新を受け取れず、購入も引き継げない。
-App Store Connect にアプリを登録する前のいましか決め直せない。
+`com.itpassport.app`。`project.yml` の `PRODUCT_BUNDLE_IDENTIFIER` に設定してある。
 
-現在の設定は `project.yml` の `PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app`。
+**App Store公開後は変更できない。** アプリの同一性そのものなので、変えると別アプリ扱いになり、
+既存ユーザーは更新を受け取れず、購入も引き継げない。以降の手順ではこの値を使う。
 
-既存アプリは次のようになっており、`com.eitango` を組織のプレフィクスとして使っている。
-
-| アプリ | バンドルID |
-| --- | --- |
-| 英単語特訓 | `com.eitango.app` |
-| 古文特訓 | `com.eitango.kobun` |
-| ITパスポート特訓（現在） | `com.itpassport.app` |
-
-揃えるなら `com.eitango.itpassport` になるが、機能上の差はない。
-既存2つと並べたときの見え方の問題なので、好みで決めてよい。
-
-変更する場合は次の3か所を直してから先へ進む（まだ何も登録していないので変更は自由）。
-
-- `project.yml` の `PRODUCT_BUNDLE_IDENTIFIER`（アプリ本体・テスト・UIテストの3つ）
-- `ITPassportApp/Common/AppConfig.swift` の `unlockProductID`
-- `Products.storekit` の `productID`
+参考までに、既存アプリは `com.eitango` をプレフィクスにしている
+（英単語特訓 `com.eitango.app` / 古文特訓 `com.eitango.kobun`）。
+本アプリは単独のプレフィクスを持つ形にした。
 
 ---
 
@@ -56,25 +53,30 @@ Secretsもアプリ登録も不要。アーカイブを作り、埋め込まれ�
 英単語特訓・古文特訓と**同じApp Store Connect APIキーを使い回せる**。
 キーは開発者アカウント単位なので、アプリごとに作り直す必要はない。
 
-リポジトリに次の3つを登録する。
+| Secret | 内容 | 状態 |
+| --- | --- | --- |
+| `ASC_API_KEY_ID` | APIキーの Key ID。`3V2TDP49RN` | ✅ 登録済み |
+| `ASC_API_KEY_P8` | `.p8` の中身（BEGIN/END行を含む全文） | ✅ 登録済み |
+| `ASC_API_ISSUER_ID` | Issuer ID（UUID形式） | ⚠️ **未登録** |
 
-| Secret | 内容 |
-| --- | --- |
-| `ASC_API_KEY_ID` | APIキーの Key ID（10文字程度の英数字） |
-| `ASC_API_ISSUER_ID` | Issuer ID（UUID形式） |
-| `ASC_API_KEY_P8` | `.p8` ファイルの中身。`-----BEGIN PRIVATE KEY-----` から `-----END PRIVATE KEY-----` まで全文 |
+### 残り: Issuer ID
 
-手元に `.p8` があるなら、コマンドで入れるのが確実（改行が崩れない）。
+Key ID は `.p8` のファイル名に含まれているが、**Issuer ID はキーからは分からない**。
+発行元アカウントの識別子なので、App Store Connect から取ってくる必要がある。
+
+[App Store Connect](https://appstoreconnect.apple.com/access/integrations/api) →
+ユーザーとアクセス → 統合 → App Store Connect API。
+キーの一覧の上に「Issuer ID」が UUID 形式で表示されているのでコピーする。
 
 ```bash
-gh secret set ASC_API_KEY_ID    -R chicktack0321/ITpassport --body "<Key ID>"
 gh secret set ASC_API_ISSUER_ID -R chicktack0321/ITpassport --body "<Issuer ID>"
-gh secret set ASC_API_KEY_P8    -R chicktack0321/ITpassport < /path/to/AuthKey_XXXXXXXXXX.p8
 ```
 
-`.p8` を無くしている場合は再ダウンロードできない。App Store Connect →
-ユーザーとアクセス → 統合 → App Store Connect API で新しいキーを作る
-（既存アプリのSecretsもそのとき合わせて更新する）。
+既存2アプリにも同じ値が入っているが、**GitHubのSecretsは書き込み専用で読み出せない**ため、
+そちらから写すことはできない。
+
+`.p8` を無くした場合も再ダウンロードできない。同じ画面で新しいキーを作り、
+既存アプリのSecretsもそのとき合わせて更新する。
 
 登録できたか確認:
 
