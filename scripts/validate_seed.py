@@ -177,6 +177,7 @@ def report_distribution(path: Path) -> None:
     by_field = Counter(q.get("field") for q in questions)
     by_difficulty = Counter(q.get("difficulty", 2) for q in questions)
     by_category = Counter(q.get("midCategory") for q in questions)
+    by_answer = Counter(q.get("correctChoice") for q in questions)
 
     total = len(questions)
     print(f"収録問題数: {total}問（シードversion {data['version']} / シラバス {data['syllabusVersion']}）")
@@ -190,6 +191,19 @@ def report_distribution(path: Path) -> None:
     for level, label in ((1, "基礎"), (2, "標準"), (3, "応用")):
         count = by_difficulty.get(level, 0)
         print(f"  {label:<12} {count:>4}問 ({count / total * 100:5.1f}%)")
+
+    # 正解の位置の偏り。アプリは出題時にシャッフルするため学習には影響しないが、
+    # 偏りが大きいと作問時に正解を先に書く癖が出ている合図になる。
+    # `scripts/rebalance_answers.py` でならせる。
+    print("\n正解の位置（偏っていれば作問の癖の合図。均等が目安）:")
+    line = "  " + "  ".join(f"{label}:{by_answer.get(label, 0):>3}" for label in CHOICE_LABELS)
+    print(line)
+    most = max(by_answer.values()) if by_answer else 0
+    if total and most / total > 0.40:
+        print(
+            f"  警告: 特定の位置に{most / total * 100:.0f}%が集中しています。"
+            "python scripts/rebalance_answers.py で平準化できます。"
+        )
 
     print("\n中分類別:")
     missing = [c for c in MID_CATEGORIES if c not in by_category]
