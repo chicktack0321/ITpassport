@@ -13,7 +13,7 @@
           "locale" : "ja"
         }
       ],
-      "productID" : "com.itpassport.app.unlock.advanced",
+      "productID" : "com.eitango.itpassport.unlock.advanced",
       "referenceName" : "Advanced questions unlock",
       "type" : "NonConsumable"
     }

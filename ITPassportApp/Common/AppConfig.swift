@@ -18,7 +18,7 @@ enum AppConfig {
     static let seedResourceName = "question_master_seed"
 
     /// App内課金のプロダクトID
-    static let unlockProductID = "com.itpassport.app.unlock.advanced"
+    static let unlockProductID = "com.eitango.itpassport.unlock.advanced"
 
     // MARK: - 試験制度
 

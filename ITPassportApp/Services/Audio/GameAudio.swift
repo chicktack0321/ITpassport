@@ -35,7 +35,7 @@ final class GameAudio {
 
     private static let enabledKey = "gameSoundEnabled"
 
-    private let logger = Logger(subsystem: "com.itpassport.app", category: "GameAudio")
+    private let logger = Logger(subsystem: "com.eitango.itpassport", category: "GameAudio")
     private let engine = AVAudioEngine()
     private let bgmPlayer = AVAudioPlayerNode()
     private let effectPlayer = AVAudioPlayerNode()

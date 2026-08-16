@@ -11,25 +11,30 @@ CI（`ios-build.yml`）はシミュレータ上での動作までしか見てい
 
 | | 項目 | 状態 |
 | --- | --- | --- |
-| 0 | バンドルID の確定 | ✅ `com.itpassport.app` |
+| 0 | バンドルID の確定 | ✅ `com.eitango.itpassport` |
 | 1 | 実機向けビルドの確認（dry run） | ✅ アーカイブ・埋め込み内容の検証とも通過 |
-| 2 | GitHub Secrets | ⚠️ 3つ中2つ。`ASC_API_ISSUER_ID` が未登録 |
+| 2 | GitHub Secrets | ✅ 3つとも登録済み |
 | 3 | App ID の登録 | ⬜ 未 |
 | 4 | App Store Connect でのアプリ登録 | ⬜ 未 |
 | 5 | 配信 | ⬜ 未 |
+
+**残りはブラウザでの登録2つ（§3・§4）だけ。**
 
 ---
 
 ## 0. バンドルID（確定済み）
 
-`com.itpassport.app`。`project.yml` の `PRODUCT_BUNDLE_IDENTIFIER` に設定してある。
+`com.eitango.itpassport`。`project.yml` の `PRODUCT_BUNDLE_IDENTIFIER` に設定してある。
 
 **App Store公開後は変更できない。** アプリの同一性そのものなので、変えると別アプリ扱いになり、
 既存ユーザーは更新を受け取れず、購入も引き継げない。以降の手順ではこの値を使う。
 
-参考までに、既存アプリは `com.eitango` をプレフィクスにしている
+当初は `com.itpassport.app` にしていたが、App ID として登録できなかったため
+`com.eitango` プレフィクスに寄せた。既存アプリと揃った形になっている
 （英単語特訓 `com.eitango.app` / 古文特訓 `com.eitango.kobun`）。
-本アプリは単独のプレフィクスを持つ形にした。
+
+App内課金のプロダクトIDもこれに追随し、`com.eitango.itpassport.unlock.advanced` になっている
+（`AppConfig.unlockProductID` と `Products.storekit` の両方）。
 
 ---
 
@@ -57,21 +62,19 @@ Secretsもアプリ登録も不要。アーカイブを作り、埋め込まれ�
 | --- | --- | --- |
 | `ASC_API_KEY_ID` | APIキーの Key ID。`3V2TDP49RN` | ✅ 登録済み |
 | `ASC_API_KEY_P8` | `.p8` の中身（BEGIN/END行を含む全文） | ✅ 登録済み |
-| `ASC_API_ISSUER_ID` | Issuer ID（UUID形式） | ⚠️ **未登録** |
+| `ASC_API_ISSUER_ID` | Issuer ID（UUID形式） | ✅ 登録済み |
 
-### 残り: Issuer ID
-
-Key ID は `.p8` のファイル名に含まれているが、**Issuer ID はキーからは分からない**。
-発行元アカウントの識別子なので、App Store Connect から取ってくる必要がある。
-
-[App Store Connect](https://appstoreconnect.apple.com/access/integrations/api) →
-ユーザーとアクセス → 統合 → App Store Connect API。
-キーの一覧の上に「Issuer ID」が UUID 形式で表示されているのでコピーする。
+登録し直すときは次のとおり。`.p8` はファイルから流し込むと改行が崩れない。
 
 ```bash
+gh secret set ASC_API_KEY_ID    -R chicktack0321/ITpassport --body "<Key ID>"
 gh secret set ASC_API_ISSUER_ID -R chicktack0321/ITpassport --body "<Issuer ID>"
+gh secret set ASC_API_KEY_P8    -R chicktack0321/ITpassport < /path/to/AuthKey_XXXXXXXXXX.p8
 ```
 
+Key ID は `.p8` のファイル名に含まれているが、**Issuer ID はキーからは分からない**。
+発行元アカウントの識別子なので、[App Store Connect](https://appstoreconnect.apple.com/access/integrations/api) →
+ユーザーとアクセス → 統合 → App Store Connect API のキー一覧の上から取る。
 既存2アプリにも同じ値が入っているが、**GitHubのSecretsは書き込み専用で読み出せない**ため、
 そちらから写すことはできない。
 
@@ -93,7 +96,7 @@ Certificates, Identifiers & Profiles → Identifiers → **+**
 
 - 種類: **App IDs** → **App**
 - Description: `ITPassport Tokkun`（管理用の名前。何でもよい）
-- Bundle ID: **Explicit** を選び、`com.itpassport.app` を入力（§0で変更したならそちら）
+- Bundle ID: **Explicit** を選び、`com.eitango.itpassport` を入力（§0の値をそのまま）
 - Capabilities: 既定のままでよい（App内課金は明示的な有効化が不要）
 
 先にここで登録しておく。CIの `-allowProvisioningUpdates` は証明書と
@@ -168,7 +171,7 @@ TestFlight → 内部テスト → グループを作り、自分のApple Accoun
 ## 7. まだできないこと
 
 **App内課金の購入フローはTestFlightでは試せない**（現時点）。
-`com.itpassport.app.unlock.advanced` を App Store Connect に登録していないため、
+`com.eitango.itpassport.unlock.advanced` を App Store Connect に登録していないため、
 購入画面は「価格を読み込んでいます」のまま止まり、購入ボタンは押せない。
 
 購入まで確認したくなったら、App Store Connect →
@@ -178,7 +181,7 @@ TestFlight → 内部テスト → グループを作り、自分のApple Accoun
 | --- | --- |
 | タイプ | 非消耗型 |
 | 参照名 | 応用問題の解放 |
-| 製品ID | `com.itpassport.app.unlock.advanced`（`AppConfig.unlockProductID` と一致させる） |
+| 製品ID | `com.eitango.itpassport.unlock.advanced`（`AppConfig.unlockProductID` と一致させる） |
 | 価格 | `Products.storekit` の表示は¥600だが、正はApp Store Connect側の設定 |
 
 登録して「提出準備完了」になれば、TestFlightのビルドから
@@ -194,6 +197,6 @@ Sandbox環境で購入を試せる（実際の課金は発生しない）。
 | --- | --- |
 | `ASC_API_KEY_P8 / ASC_API_KEY_ID が未設定です` | §2。Secretsが入っていない |
 | 送信ステップで `No suitable application records were found` | §4のアプリ登録がまだ。バンドルIDの綴りも確認する |
-| `No profiles for 'com.itpassport.app' were found` | §3のApp ID登録がまだ |
+| `No profiles for 'com.eitango.itpassport' were found` | §3のApp ID登録がまだ |
 | ビルド番号が重複していると言われる | App Store Connectは同じ（バージョン, ビルド番号）を二度受け付けない。ワークフローは実行番号を使うので、通常は起きない。バージョンを上げるときは `project.yml` の `MARKETING_VERSION` を変更する |
 | TestFlightにビルドが出てこない | 処理に5〜15分かかる。それ以上なら、App Store Connectから届くメールに理由が書かれている |

@@ -8,7 +8,7 @@ import os
 /// `SchemaMigrationPlan` を実装したVersionedSchemaに切り替える前提の置き場所として分離している。
 @MainActor
 enum AppContainer {
-    private static let logger = Logger(subsystem: "com.itpassport.app", category: "AppContainer")
+    private static let logger = Logger(subsystem: "com.eitango.itpassport", category: "AppContainer")
 
     static let shared: ModelContainer = {
         let schema = Schema([

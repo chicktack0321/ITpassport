@@ -1,7 +1,10 @@
 name: ITPassportApp
 
 options:
-  bundleIdPrefix: com.itpassport.app
+  # バンドルIDを明示していないターゲットの既定プレフィクス。
+  # 本プロジェクトは全ターゲットで PRODUCT_BUNDLE_IDENTIFIER を指定しているため実際には使われないが、
+  # 組織のプレフィクス（英単語特訓・古文特訓と共通）を記しておく
+  bundleIdPrefix: com.eitango
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -28,7 +31,7 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: ITPassportApp/App/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.eitango.itpassport
         # 日本語＋スペースの PRODUCT_NAME はバンドル名・モジュール名・ビルドパスに波及し、
         # テストターゲットの TEST_HOST 解決に失敗する。ホーム画面に出る名前は
         # Info.plist の CFBundleDisplayName が担うため、ここはASCIIで固定する。
@@ -61,7 +64,7 @@ targets:
 
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.eitango.itpassport.tests
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
 
@@ -83,7 +86,7 @@ targets:
 
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.itpassport.app.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.eitango.itpassport.uitests
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
 

@@ -18,7 +18,7 @@ final class Entitlements {
     /// 価格の表示に使う。読み込めていないときは nil（購入ボタンは無効にする）
     private(set) var product: Product?
 
-    private let logger = Logger(subsystem: "com.itpassport.app", category: "Entitlements")
+    private let logger = Logger(subsystem: "com.eitango.itpassport", category: "Entitlements")
     private let trial: TrialManager
     /// deinit（常にnonisolated）から安全にキャンセルできるよう、actor隔離チェックの対象から外す
     nonisolated(unsafe) private var updatesTask: Task<Void, Never>?

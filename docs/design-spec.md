@@ -463,7 +463,7 @@ ITP_<中分類コード>_<4桁連番>   例: ITP_SEC_0042
 - 試用期間14日はベースの `TrialManager` のまま（時計巻き戻し対策込み）
 - 試用終了後も**アプリの機能は一切止めない**。応用問題が出題対象から外れるだけで、
   問題一覧での閲覧・解説の読み直しは常に全問できる（ベースのApp Review対策方針を踏襲）
-- プロダクトID: `com.itpassport.app.unlock.advanced`（非消耗型1つ。bundle IDに合わせて確定させる）
+- プロダクトID: `com.eitango.itpassport.unlock.advanced`（非消耗型1つ。bundle IDに合わせて確定させる）
 - `Transaction.updates` の購読による払い戻し反映もベースのまま
 
 > 代替案として「模擬試験モードを課金対象にする」も検討したが、Phase 1に模試がない（§14）ため
