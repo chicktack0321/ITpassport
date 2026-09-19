@@ -184,7 +184,7 @@ TestFlight → 内部テスト → グループを作り、自分のApple Accoun
 | タイプ | 非消耗型 |
 | 参照名 | 応用問題の解放 |
 | 製品ID | `com.eitango.itpassport.unlock.advanced`（`AppConfig.unlockProductID` と一致させる） |
-| 価格 | `Products.storekit` の表示は¥600だが、正はApp Store Connect側の設定 |
+| 価格 | ¥300（`Products.storekit` の表示価格と揃えてある。実際に請求される額はApp Store Connect側の設定が正） |
 
 登録して「提出準備完了」になれば、TestFlightのビルドから
 Sandbox環境で購入を試せる（実際の課金は発生しない）。

@@ -464,6 +464,7 @@ ITP_<中分類コード>_<4桁連番>   例: ITP_SEC_0042
 - 試用終了後も**アプリの機能は一切止めない**。応用問題が出題対象から外れるだけで、
   問題一覧での閲覧・解説の読み直しは常に全問できる（ベースのApp Review対策方針を踏襲）
 - プロダクトID: `com.eitango.itpassport.unlock.advanced`（非消耗型1つ。bundle IDに合わせて確定させる）
+- 価格: ¥300（App Store Connectで設定する。`Products.storekit` の表示価格も同額に揃える）
 - `Transaction.updates` の購読による払い戻し反映もベースのまま
 
 > 代替案として「模擬試験モードを課金対象にする」も検討したが、Phase 1に模試がない（§14）ため
