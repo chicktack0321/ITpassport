@@ -7,11 +7,15 @@ import XCTest
 /// StoreKit に依存しない値型として切り出してあるので、そのままテストできる。
 final class AccessRightsTests: XCTestCase {
 
-    func testLockedExcludesAdvanced() {
+    func testLockedAllowsOnlyBasic() {
         let rights = AccessRights.locked
 
         XCTAssertFalse(rights.hasFullAccess)
-        XCTAssertEqual(rights.availableDifficulties, [.basic, .standard])
+        XCTAssertEqual(rights.availableDifficulties, [.basic])
+        XCTAssertFalse(
+            rights.availableDifficulties.contains(.standard),
+            "未購入かつ試用切れでは標準問題を出題しない"
+        )
         XCTAssertFalse(
             rights.availableDifficulties.contains(.advanced),
             "未購入かつ試用切れでは応用問題を出題しない"
@@ -32,7 +36,7 @@ final class AccessRightsTests: XCTestCase {
         XCTAssertEqual(rights.availableDifficulties, Set(QuestionDifficulty.allCases))
     }
 
-    /// 権利が無くても基礎・標準は出題される。
+    /// 権利が無くても基礎は出題される。
     /// 機能そのものを止めると、一定期間後に動かなくなる体験版として審査で問題になり、
     /// 教育カテゴリでは「使えなくなった」という低評価を最も招く。
     func testLockedStillAllowsStudying() {
@@ -43,7 +47,7 @@ final class AccessRightsTests: XCTestCase {
     func testSummaryDistinguishesPurchaseFromTrial() {
         XCTAssertEqual(AccessRights(isPurchased: true, isTrialActive: false).summary, "すべての問題（購入済み）")
         XCTAssertEqual(AccessRights(isPurchased: false, isTrialActive: true).summary, "すべての問題（お試し期間中）")
-        XCTAssertEqual(AccessRights.locked.summary, "基礎・標準の問題")
+        XCTAssertEqual(AccessRights.locked.summary, "基礎の問題")
     }
 }
 

@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// 応用問題を解放するための購入画面。
+/// 標準・応用問題を解放するための購入画面。
 ///
 /// 売り物は「機能」ではなく「出題される問題の範囲」なので、何が増えるのかを問題数と内容で具体的に示す。
 /// 機能を止める作りにはしていないため、ここで買わなくても学習は続けられることも明記する
@@ -13,7 +13,7 @@ struct PaywallView: View {
 
     @State private var isWorking = false
     @State private var message: String?
-    @State private var advancedCount = 0
+    @State private var unlockableCount = 0
 
     var body: some View {
         NavigationStack {
@@ -28,14 +28,14 @@ struct PaywallView: View {
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("応用問題の解放")
+            .navigationTitle("標準・応用問題の解放")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("閉じる") { dismiss() }
                 }
             }
-            .task { countAdvancedQuestions() }
+            .task { countUnlockableQuestions() }
             .alert("お知らせ", isPresented: .constant(message != nil)) {
                 Button("OK") { message = nil }
             } message: {
@@ -49,7 +49,7 @@ struct PaywallView: View {
             Image(systemName: "graduationcap.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.blue)
-            Text("合否を分ける応用問題まで、すべて出題対象に")
+            Text("本試験の中心レベルから応用まで、すべて出題対象に")
                 .font(.title3).bold()
                 .multilineTextAlignment(.center)
             if let remaining = entitlements.trialDaysRemaining {
@@ -65,7 +65,7 @@ struct PaywallView: View {
         DashboardCard(title: "解放される問題") {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("\(advancedCount)")
+                    Text("\(unlockableCount)")
                         .font(.system(size: 40, weight: .black, design: .rounded))
                         .foregroundStyle(.blue)
                         .contentTransition(.numericText())
@@ -73,7 +73,7 @@ struct PaywallView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
-                Text("応用レベルの問題です。計算問題、複数分野にまたがる知識、生成AI・DX・ゼロトラストといった最新シラバス項目を含みます。")
+                Text("標準レベルと応用レベルの問題です。本試験の中心となる問題に加えて、計算問題や、生成AI・DX・ゼロトラストといった最新シラバス項目を含みます。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -95,7 +95,7 @@ struct PaywallView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.secondary)
-            Text("購入しなくても演習は引き続きお使いいただけます。出題される問題が基礎・標準までになります。問題一覧での閲覧・検索・解説の読み直しは全問そのままです。")
+            Text("購入しなくても演習は引き続きお使いいただけます。出題される問題が基礎だけになります。問題一覧での閲覧・検索・解説の読み直しは全問そのままです。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -146,8 +146,9 @@ struct PaywallView: View {
     // MARK: - 操作
 
     /// 解放される問題数は同梱データの改訂で変わるため、固定値ではなく実データから数える
-    private func countAdvancedQuestions() {
-        advancedCount = QuestionRepository(context: modelContext).count(difficulty: .advanced)
+    private func countUnlockableQuestions() {
+        let repository = QuestionRepository(context: modelContext)
+        unlockableCount = repository.count(difficulty: .standard) + repository.count(difficulty: .advanced)
     }
 
     private func buy() {

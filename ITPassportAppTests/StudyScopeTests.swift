@@ -65,19 +65,23 @@ final class StudyScopeTests: XCTestCase {
         )
     }
 
-    /// 権利が無いと応用問題は出題対象から外れる
-    func testLockedRightsExcludeAdvancedQuestions() {
+    /// 権利が無いと標準・応用の問題は出題対象から外れ、基礎だけが残る
+    func testLockedRightsExcludeStandardAndAdvancedQuestions() {
         let scope = StudyScope.default
         let advanced = insert("ITP_SEC_0001", midCategory: .security, difficulty: .advanced)
         let standard = insert("ITP_SEC_0002", midCategory: .security, difficulty: .standard)
+        let basic = insert("ITP_SEC_0003", midCategory: .security, difficulty: .basic)
 
         let available = AccessRights.locked.availableDifficulties
 
         XCTAssertFalse(
             scope.contains(advanced, availableDifficulties: available, unspecified: StudyScope.studyDefaultDifficulties)
         )
-        XCTAssertTrue(
+        XCTAssertFalse(
             scope.contains(standard, availableDifficulties: available, unspecified: StudyScope.studyDefaultDifficulties)
+        )
+        XCTAssertTrue(
+            scope.contains(basic, availableDifficulties: available, unspecified: StudyScope.studyDefaultDifficulties)
         )
     }
 
@@ -158,7 +162,7 @@ final class StudyScopeTests: XCTestCase {
         var scope = StudyScope.default
         scope.setField(.strategy)
 
-        // 設定でストラテジ系に絞り、権利が無い（応用が外れる）→ 基礎の1問だけ
+        // 設定でストラテジ系に絞り、権利が無い（標準・応用が外れる）→ 基礎の1問だけ
         let locked = repository.fetchStudyPool(
             scope: scope,
             availableDifficulties: AccessRights.locked.availableDifficulties

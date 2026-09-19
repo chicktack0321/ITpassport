@@ -95,7 +95,7 @@ final class HomeViewModel {
         guard let questionRepository, let progressRepository else { return }
 
         // 出題用のプールではなく、収録している問題全体から絞り込む。
-        // 未購入でも応用問題を含めた習熟度を見られるほうが、何を解放することになるのかが伝わる。
+        // 未購入でも標準・応用問題を含めた習熟度を見られるほうが、何を解放することになるのかが伝わる。
         let questions = questionRepository.fetchQuestions(matching: masteryScope)
         totalQuestionCount = questions.count
         summary = progressRepository.summarize(questions: questions)

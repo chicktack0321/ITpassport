@@ -35,7 +35,7 @@ struct QuestionRepository {
 
     /// 習熟度の集計など、出題ではない用途で範囲を適用する。
     ///
-    /// 購入状況では絞らない（未購入でも「応用問題の習熟度」を見られるほうが、
+    /// 購入状況では絞らない（未購入でも「標準・応用問題の習熟度」を見られるほうが、
     /// 何を解放することになるのかが伝わる）。
     func fetchQuestions(matching scope: StudyScope) -> [QuestionMaster] {
         fetchAll().filter {

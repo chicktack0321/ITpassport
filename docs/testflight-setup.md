@@ -182,7 +182,7 @@ TestFlight → 内部テスト → グループを作り、自分のApple Accoun
 | 項目 | 値 |
 | --- | --- |
 | タイプ | 非消耗型 |
-| 参照名 | 応用問題の解放 |
+| 参照名 | 標準・応用問題の解放 |
 | 製品ID | `com.eitango.itpassport.unlock.advanced`（`AppConfig.unlockProductID` と一致させる） |
 | 価格 | ¥300（`Products.storekit` の表示価格と揃えてある。実際に請求される額はApp Store Connect側の設定が正） |
 

@@ -152,9 +152,9 @@ struct QuizView: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("応用問題はいま出題されません")
+                    Text("標準・応用問題はいま出題されません")
                         .font(.caption).bold()
-                    Text("解放すると、計算問題や最新シラバス項目が出題対象に加わります")
+                    Text("解放すると、本試験の中心となる標準問題と応用問題が出題対象に加わります")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
