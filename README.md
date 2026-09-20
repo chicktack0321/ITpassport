@@ -42,6 +42,20 @@ GitHub にpushすると `.github/workflows/ios-build.yml` が動く。2段構成
    `.xcresult` からPNGを抽出する。Actionsの実行結果ページ → Artifacts欄の
    **`ui-screenshots`** をダウンロードすると、実際に描画された画面を確認できる
 
+### App Store用のスクリーンショットを撮る
+
+Actionsタブ → **App Store Screenshots** ワークフロー → **Run workflow**（手動トリガー）。
+撮影に使うシミュレータを入力で指定できる（既定は `iPhone 16 Pro Max`）。
+
+`ios-build` のUIテストは空いているシミュレータを拾って撮るため、画素数が実行ごとに変わる。
+App Store Connect は画素数が決まっている（iPhone 6.9インチは 1320x2868 か 1290x2796）ので、
+こちらは機種を固定し、提出に使う5枚だけを `scripts/collect_appstore_screenshots.py` で選んで
+画素数を検査する。違う機種で撮ってしまった場合はここで失敗するので、提出時まで気付かないことはない。
+
+- 時刻・バッテリー・電波は `simctl status_bar` で 9:41・満充電・最大に固定する（撮り直しても差分が出ないように）
+- Artifacts欄の **`appstore-screenshots`** が提出用の5枚（ホーム / 演習の出題 / 全選択肢の解説 / 問題一覧 / 学習履歴）
+- **`appstore-screenshots-raw`** には撮った全画面が入る。差し替えたいときはこちらから選ぶ
+
 ### 問題データをローカルで検証する
 
 ```bash

@@ -1,0 +1,110 @@
+name: App Store Screenshots
+
+# App Store Connect に載せるスクリーンショットを撮る。手動トリガーのみ。
+#
+# ios-build.yml のUIテストは「画面が壊れていないか」を見るためのもので、
+# 空いているシミュレータを拾って撮る。App Store Connect は画素数が決まっている
+# （iPhone 6.9インチ = 1320x2868）ため、こちらは機種を固定して撮り、
+# 提出に使う5枚だけを選んで画素数を検査する。
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: "撮影に使うシミュレータ。6.9インチのiPhoneを指定する"
+        required: false
+        default: "iPhone 16 Pro Max"
+        type: string
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen and xcparse
+        run: |
+          brew install xcodegen
+          brew install chargepoint/xcparse/xcparse
+
+      - name: Generate Xcode project from project.yml
+        run: xcodegen generate
+
+      - name: Boot the simulator
+        id: sim
+        env:
+          DEVICE: ${{ inputs.device }}
+        run: |
+          UDID=$(python3 -c "
+          import json, os, re, subprocess, sys
+          want = os.environ['DEVICE']
+          data = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '-j']))
+          best = None
+          for runtime, devices in data['devices'].items():
+              m = re.search(r'iOS-(\d+)-(\d+)', runtime)
+              if not m:
+                  continue
+              version = (int(m.group(1)), int(m.group(2)))
+              for d in devices:
+                  if d['name'] == want and (best is None or version > best[0]):
+                      best = (version, d['udid'])
+          if not best:
+              names = sorted({d['name'] for devs in data['devices'].values() for d in devs if d['name'].startswith('iPhone')})
+              print(f'{want} が見つかりません。利用できるiPhone: ' + ', '.join(names), file=sys.stderr)
+              raise SystemExit(1)
+          print(best[1])
+          ")
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Clean up the status bar
+        # 時刻やバッテリーの表示が実行のたびに変わると、撮り直したときに差分が出る。
+        # Appleの公式素材に合わせて 9:41・満充電・電波最大で固定する。
+        run: |
+          xcrun simctl status_bar "${{ steps.sim.outputs.udid }}" override \
+            --time "9:41" \
+            --batteryState charged \
+            --batteryLevel 100 \
+            --cellularMode active \
+            --cellularBars 4 \
+            --wifiMode active \
+            --wifiBars 3 \
+            --dataNetwork wifi
+
+      - name: Run the UI tests (captures screenshots)
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project ITPassportApp.xcodeproj \
+            -scheme ITPassportApp \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:ITPassportAppUITests \
+            -resultBundlePath ScreenshotResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Pick the App Store set and check the pixel size
+        run: |
+          mkdir -p raw appstore
+          xcparse screenshots ScreenshotResults.xcresult raw
+          python3 scripts/collect_appstore_screenshots.py raw appstore
+
+      - name: Upload App Store screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: appstore-screenshots
+          path: appstore
+          if-no-files-found: error
+
+      - name: Upload all screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appstore-screenshots-raw
+          path: raw
+          if-no-files-found: warn
