@@ -184,10 +184,7 @@ final class ITPassportAppUITests: XCTestCase {
         capture(app, "08_Purchase_ReviewScreenshot")
     }
 
-    /// 4択の1つ目を押す。選択肢の文言は出題ごとに変わるため、識別子で掴む。
-    /// 正解でも不正解でも解説が出るので、どれを押すかは問わない。
-    @discardableResult
-    /// 指定した識別子の選択肢を押す。
+    /// 指定した識別子の選択肢を押す。選択肢の文言は出題ごとに変わるため、識別子で掴む。
     /// `QuizChoiceCorrect` は正解の選択肢、`QuizChoice` はそれ以外（＝不正解）に付く。
     @discardableResult
     private func tapChoice(_ app: XCUIApplication, identifier: String) -> Bool {
