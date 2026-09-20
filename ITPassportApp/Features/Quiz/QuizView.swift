@@ -264,6 +264,7 @@ struct QuizView: View {
                         label: QuizQuestion.displayLabel(at: index),
                         text: choice.text,
                         state: choiceState(index: index, question: question),
+                        isCorrectAnswer: index == question.correctIndex,
                         action: { viewModel.selectAnswer(index) }
                     )
                     // 紙吹雪を正解の位置から出すために、各選択肢の位置を親へ伝える
@@ -342,12 +343,15 @@ private struct ChoiceAnchorKey: PreferenceKey {
 
 private struct ChoiceButton: View {
     static let accessibilityIdentifier = "QuizChoice"
+    /// UIテストで正解の選択肢を掴むための識別子（`UITestSupport` の起動引数があるときだけ使う）
+    static let correctAccessibilityIdentifier = "QuizChoiceCorrect"
 
     enum State { case idle, correct, incorrect, disabled }
 
     let label: String
     let text: String
     let state: State
+    let isCorrectAnswer: Bool
     let action: () -> Void
 
     var body: some View {
@@ -372,7 +376,11 @@ private struct ChoiceButton: View {
         }
         .disabled(state != .idle)
         // 選択肢の文言は出題ごとに変わるため、UIテストから掴む手掛かりを別に持たせる
-        .accessibilityIdentifier(Self.accessibilityIdentifier)
+        .accessibilityIdentifier(
+            UITestSupport.revealsCorrectChoice && isCorrectAnswer
+                ? Self.correctAccessibilityIdentifier
+                : Self.accessibilityIdentifier
+        )
     }
 
     private var labelColor: Color {

@@ -13,6 +13,9 @@ final class ITPassportAppUITests: XCTestCase {
 
     func testCaptureAllScreens() throws {
         let app = XCUIApplication()
+        // 正解の選択肢を識別できるようにする。App Store用に「正解したときの解説画面」を撮るため、
+        // 実行ごとに正誤が変わらないようにする必要がある（`UITestSupport` を参照）。
+        app.launchArguments.append("-uiTestRevealsCorrectChoice")
         app.launch()
 
         capture(app, "01_Home")
@@ -60,7 +63,8 @@ final class ITPassportAppUITests: XCTestCase {
 
                 // 解答すると解説パネルが出る。このアプリの中心機能なので必ず撮る。
                 // 制限時間を持たないため、待っている間に状態が変わることはない。
-                tapFirstChoice(app)
+                // 1問目は正解した状態。App Store用のスクリーンショットにはこちらを使う。
+                tapChoice(app, identifier: "QuizChoiceCorrect")
                 settle()
 
                 let nextButton = app.buttons["quizNextButton"]
@@ -74,6 +78,17 @@ final class ITPassportAppUITests: XCTestCase {
                         expandButton.tap()
                         settle()
                         capture(app, "04b_Quiz_AllChoices")
+                    }
+
+                    // 2問目はわざと間違える。不正解のときだけ出る「選んだ選択肢の解説」は
+                    // このアプリの要なので、その表示も毎回確かめる。
+                    if nextButton.isHittable {
+                        nextButton.tap()
+                        settle()
+                        if tapChoice(app, identifier: "QuizChoice") {
+                            settle()
+                            capture(app, "04c_Quiz_Explanation_Incorrect")
+                        }
                     }
                 }
             }
@@ -172,8 +187,11 @@ final class ITPassportAppUITests: XCTestCase {
     /// 4択の1つ目を押す。選択肢の文言は出題ごとに変わるため、識別子で掴む。
     /// 正解でも不正解でも解説が出るので、どれを押すかは問わない。
     @discardableResult
-    private func tapFirstChoice(_ app: XCUIApplication) -> Bool {
-        let choice = app.buttons.matching(identifier: "QuizChoice").firstMatch
+    /// 指定した識別子の選択肢を押す。
+    /// `QuizChoiceCorrect` は正解の選択肢、`QuizChoice` はそれ以外（＝不正解）に付く。
+    @discardableResult
+    private func tapChoice(_ app: XCUIApplication, identifier: String) -> Bool {
+        let choice = app.buttons.matching(identifier: identifier).firstMatch
         guard choice.waitForExistence(timeout: 5), choice.isHittable else { return false }
         choice.tap()
         return true
